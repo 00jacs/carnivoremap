@@ -1,17 +1,33 @@
 <script lang="ts">
 	import '../app.pcss';
 
+	import { invalidate } from '$app/navigation';
+	import { onMount } from 'svelte';
+
 	import { ModeWatcher } from 'mode-watcher';
 	import Sun from 'svelte-radix/Sun.svelte';
 	import Moon from 'svelte-radix/Moon.svelte';
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
+
+	export let data;
+	$: ({ session, supabase } = data);
+
+	onMount(() => {
+		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+			if (newSession?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
+		return () => data.subscription.unsubscribe();
+	});
 </script>
 
 <ModeWatcher />
 
 <header>
-	<div class="max-w-xl mx-auto pt-8">
+	<div class="mx-auto max-w-xl pt-8">
 		<Button on:click={toggleMode} variant="outline" size="icon">
 			<Sun
 				class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
