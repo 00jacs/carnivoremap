@@ -11,7 +11,8 @@
 		"test": "vitest",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"prepare": "husky"
+		"prepare": "husky",
+		"supabase-generate-types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/lib/supabase/database.d.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -45,9 +46,13 @@
 		"bits-ui": "^0.21.13",
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.18",
+		"lucide-svelte": "^0.437.0",
 		"mode-watcher": "^0.4.1",
+		"svelte-sonner": "^0.3.27",
 		"tailwind-merge": "^2.5.2",
-		"tailwind-variants": "^0.2.1"
+		"tailwind-variants": "^0.2.1",
+		"zod": "^3.23.8",
+		"zod-form-data": "^2.0.2"
 	},
 	"lint-staged": {
 		"**/*.{svelte,js,ts,html,css}": [
