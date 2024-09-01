@@ -1,5 +1,6 @@
 // @todo: add image upload possibility
 import z from 'zod';
+import { zfd } from 'zod-form-data';
 
 export const CreateRecipeCacheFormSchema = z.object({
 	title: z.string(),
@@ -32,5 +33,7 @@ export const CreateRecipeFormSchema = z.object({
 	ingredients: z.array(z.string()).min(1, 'At least one ingredient is required'),
 	content: z.string().min(100, 'Content of your recipe needs to have at least 100 characters')
 });
+
+export const CreateRecipeFormDataSchema = zfd.formData(CreateRecipeFormSchema);
 
 export type CreateRecipeFormType = z.infer<typeof CreateRecipeFormSchema>;

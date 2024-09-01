@@ -13,10 +13,13 @@
 	import { type Selected } from 'bits-ui';
 	import * as Select from '$lib/components/ui/select';
 
+	import { enhance } from '$app/forms';
 	import { ZodError } from 'zod';
 	import _flags from '$lib/constants/food-flags';
-	import { CreateRecipeFormSchema } from './_validate';
+	import { CreateRecipeFormSchema, type CreateRecipeFormType } from './_validate';
 	import { form } from './_cache';
+	import { toast } from 'svelte-sonner';
+	import { objectToFormData } from '$lib/utils/form';
 
 	let price_range: Selected<unknown> | undefined = {
 		value: $form.price_range,
@@ -136,11 +139,35 @@
 		};
 	}
 
-	function handleCreateRecipe() {
+	async function cleanForm() {
+		$form = {
+			title: '',
+			description: '',
+			flags: [],
+			video_link: '',
+			prep_time: '',
+			cook_time: '',
+			price_range: '',
+			ingredients: [],
+			content: ''
+		};
+
+		necessaryIngredients = [];
+		flags.length = 0;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function handleSubmit({ formElement, formData, action, cancel }) {
+		let schema: CreateRecipeFormType | undefined;
+
 		try {
-			const schema = CreateRecipeFormSchema.parse($form);
-			console.log('sending schema to the server: ', schema);
+			schema = CreateRecipeFormSchema.parse($form);
 		} catch (error) {
+			toast.error('Please fill in all the required fields correctly', {
+				description:
+					'All the incorrect fields have been marked with a red border and an error message.'
+			});
+
 			if (error && error instanceof ZodError) {
 				const fieldErrors = error.flatten().fieldErrors;
 
@@ -151,9 +178,38 @@
 					}
 				}
 			}
+
+			await cancel();
+			return;
 		}
 
-		// send a request to the server
+		formData = objectToFormData(schema, formData);
+		console.log('schema: ', schema);
+		console.log('form data get flags: ', formData.getAll('flags[]'));
+
+		toast.promise(() => new Promise((resolve) => setTimeout(resolve, 2000)), {
+			loading: 'Adding recipe...',
+			success: 'Successfully added your recipe!',
+			error: 'Error when adding recipe'
+		});
+
+		// calling cancel() will prevent submission - we want to do this if client-side validation fails
+		// action is the URL to which the form was posted
+		// formData is its `FormData` object that's about to be submitted
+
+		console.log('loading...');
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		return async ({ result, update }) => {
+			try {
+				await update();
+			} catch (E) {
+				console.log(E);
+			}
+
+			cleanForm();
+			console.log('done!');
+		};
 	}
 </script>
 
@@ -161,7 +217,7 @@
 	<div class="mx-auto mt-16 max-w-4xl px-8 pb-36">
 		<h1 class="mb-8 text-xl font-semibold md:text-3xl">Create your recipe</h1>
 
-		<form on:submit|preventDefault={handleCreateRecipe}>
+		<form method="POST" use:enhance={handleSubmit}>
 			<div class="grid gap-8">
 				<div class="grid w-full items-center gap-1.5">
 					<Label for="title">Title</Label>
@@ -173,6 +229,7 @@
 					<Input
 						type="text"
 						id="title"
+						name="title"
 						placeholder="Unique title of your recipe"
 						class={formErrors.title ? 'border-primary' : ''}
 						required
@@ -194,6 +251,7 @@
 					<Input
 						type="text"
 						id="description"
+						name="description"
 						placeholder="Delicious, dairy-free pancakes with eggs and collagen only..."
 						class={formErrors.description ? 'border-primary' : ''}
 						required
@@ -223,7 +281,7 @@
 								}}
 								class="flex items-center space-x-2"
 								on:click={onFlagToggle}>
-								<Checkbox id={flag.id} bind:checked={flag.checked} />
+								<Checkbox id={flag.id} name={flag.id} bind:checked={flag.checked} />
 
 								<Label
 									for={flag.id}
@@ -238,15 +296,15 @@
 				<Separator class="my-2" />
 
 				<div class="grid gap-2">
-					<Label for="video-link">Link to a video (optional)</Label>
+					<Label for="video_link">Link to a video (optional)</Label>
 
 					{#if formErrors.video_link}
 						<p class="text-sm font-semibold text-primary">{formErrors.video_link}.</p>
 					{/if}
 
 					<Input
-						id="video-link"
-						name="video-link"
+						id="video_link"
+						name="video_link"
 						placeholder="Share a link to a video if you have one"
 						class={formErrors.video_link ? 'border-primary' : ''}
 						bind:value={$form.video_link} />
@@ -256,7 +314,7 @@
 
 				<div class="grid grid-cols-1 gap-3 gap-y-8 md:grid-cols-3">
 					<div>
-						<Label for="prep-time">Preperation time (minutes)</Label>
+						<Label for="prep_time">Preperation time (minutes)</Label>
 
 						{#if formErrors.prep_time}
 							<p class="mb-1 text-sm font-semibold text-primary">{formErrors.prep_time}.</p>
@@ -264,8 +322,8 @@
 
 						<Input
 							type="number"
-							id="prep-time"
-							name="prep-time"
+							id="prep_time"
+							name="prep_time"
 							placeholder="Minutes of preperation required"
 							required
 							class={formErrors.prep_time ? 'border-primary' : ''}
@@ -273,15 +331,15 @@
 					</div>
 
 					<div>
-						<Label for="cooking-time">Cooking time (minutes)</Label>
+						<Label for="cook_time">Cooking time (minutes)</Label>
 
 						{#if formErrors.cook_time}
 							<p class="mb-1 text-sm font-semibold text-primary">{formErrors.cook_time}.</p>
 						{/if}
 
 						<Input
-							id="cooking-time"
-							name="cooking-time"
+							id="cook_time"
+							name="cook_time"
 							type="number"
 							placeholder="Minutes of cooking required"
 							required
@@ -290,7 +348,7 @@
 					</div>
 
 					<div>
-						<Label for="price">Price range</Label>
+						<Label for="price_range">Price range</Label>
 
 						{#if formErrors.price_range}
 							<p class="mb-1 text-sm font-semibold text-primary">{formErrors.price_range}.</p>
@@ -298,6 +356,7 @@
 
 						<Select.Root
 							required
+							name="price_range"
 							bind:selected={price_range}
 							onSelectedChange={(newVal) => onPriceRangeChange(newVal?.value || '')}>
 							<Select.Trigger class={formErrors.price_range ? 'border-primary' : ''}>
@@ -387,9 +446,7 @@
 						<Popover.Trigger asChild let:builder>
 							<Button
 								builders={[builder]}
-								{...necessaryIngredients.length !== 0 && formErrors.ingredients
-									? { variant: 'outline' }
-									: {}}>
+								{...necessaryIngredients.length !== 0 ? { variant: 'outline' } : {}}>
 								Add ingredient
 							</Button>
 						</Popover.Trigger>

@@ -5,10 +5,14 @@
 	import { goto, invalidate } from '$app/navigation';
 	import { user } from '$lib/auth';
 
+	// theme-related
 	import { ModeWatcher } from 'mode-watcher';
 	import Sun from 'svelte-radix/Sun.svelte';
 	import Moon from 'svelte-radix/Moon.svelte';
 	import { toggleMode } from 'mode-watcher';
+
+	// UI components
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { Button } from '$lib/components/ui/button';
 
 	export let data;
@@ -39,6 +43,7 @@
 </script>
 
 <ModeWatcher />
+<Toaster position="top-center" />
 
 <header>
 	<div class="mx-auto flex max-w-4xl justify-between px-8 pt-8">
@@ -50,6 +55,12 @@
 					class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
 				<span class="sr-only">Toggle theme</span>
 			</Button>
+		</div>
+
+		<div class="flex gap-2">
+			<Button href="/recipes" variant="outline">Recipes</Button>
+			<Button href="/recipes/create" variant="outline">Create recipe</Button>
+			<Button href="/map" variant="outline">Map</Button>
 		</div>
 
 		<div>
