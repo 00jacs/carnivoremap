@@ -1,11 +1,11 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { CreateRecipeCacheFormSchema, type CreateRecipeFormType } from './_validate';
+import { CreateRecipeCacheFormSchema, type CreateRecipeCacheFormType } from './_validate';
 
 // sync form with localStorage (caching = improve UX, less frustration)
 const CACHE_KEY = 'create-recipe-form';
 
-const emptyForm: CreateRecipeFormType = {
+const emptyForm: CreateRecipeCacheFormType = {
 	title: '',
 	description: '',
 	flags: [],
@@ -17,7 +17,7 @@ const emptyForm: CreateRecipeFormType = {
 	content: ''
 };
 
-function getCachedForm(): CreateRecipeFormType {
+function getCachedForm(): CreateRecipeCacheFormType {
 	if (!browser || !localStorage) {
 		return emptyForm;
 	}
@@ -41,7 +41,7 @@ function getCachedForm(): CreateRecipeFormType {
 	}
 }
 
-function updateCache(newForm: CreateRecipeFormType) {
+function updateCache(newForm: CreateRecipeCacheFormType) {
 	if (!browser || typeof localStorage === 'undefined') return;
 
 	try {
@@ -52,7 +52,7 @@ function updateCache(newForm: CreateRecipeFormType) {
 	}
 }
 
-export const form = writable<CreateRecipeFormType>(getCachedForm());
+export const form = writable<CreateRecipeCacheFormType>(getCachedForm());
 
 form.subscribe(updateCache);
 

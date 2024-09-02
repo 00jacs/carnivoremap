@@ -4,7 +4,7 @@ export function formDataToObject(formData: FormData): Record<string, any> {
 }
 
 // eslint-disable-next-line
-export function objectToFormData(obj: Record<string, any>, formData: FormData): FormData {
+export function objectToFormData(obj: Record<string, any>, formData?: FormData): FormData {
 	formData = formData || new FormData();
 
 	Object.keys(obj).forEach((key) => {

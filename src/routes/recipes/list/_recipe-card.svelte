@@ -28,10 +28,12 @@
 </script>
 
 <Card.Root>
-	<Card.Header>
-		<Card.Title>{recipe.title}</Card.Title>
-		<Card.Description>{recipe.description}</Card.Description>
-	</Card.Header>
+	<a href="/recipes/{recipe.slug}">
+		<Card.Header>
+			<Card.Title>{recipe.title}</Card.Title>
+			<Card.Description>{recipe.description}</Card.Description>
+		</Card.Header>
+	</a>
 	<Card.Content>
 		<div class="flex flex-col gap-1">
 			<span class="flex items-center gap-2 text-sm text-muted-foreground">

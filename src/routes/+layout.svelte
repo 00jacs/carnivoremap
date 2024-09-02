@@ -46,24 +46,21 @@
 <Toaster position="top-center" />
 
 <header>
-	<div class="mx-auto flex max-w-4xl justify-between px-8 pt-8">
-		<div>
-			<Button on:click={toggleMode} variant="outline" size="icon">
-				<Sun
-					class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-				<Moon
-					class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-				<span class="sr-only">Toggle theme</span>
-			</Button>
-		</div>
+	<div class="mx-auto flex max-w-7xl justify-between px-8 pt-8">
+		<a href="/" class="mb-0.5 flex items-center justify-center">
+			<span
+				id="logo"
+				class="logo font-semibold duration-200 hover:text-primary"
+				style="font-size: 1.1rem;">
+				🥩 &nbsp;&nbsp;Carnivore Map
+			</span>
+		</a>
 
 		<div class="flex gap-2">
 			<Button href="/recipes" variant="outline">Recipes</Button>
 			<Button href="/recipes/create" variant="outline">Create recipe</Button>
 			<Button href="/map" variant="outline">Map</Button>
-		</div>
 
-		<div>
 			{#if session && session.user}
 				<Button on:click={logout} variant="outline">Logout</Button>
 			{:else}
@@ -72,6 +69,14 @@
 					<Button href="/auth/login" variant="outline">Login</Button>
 				</div>
 			{/if}
+
+			<Button on:click={toggleMode} variant="outline" size="icon">
+				<Sun
+					class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+				<Moon
+					class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+				<span class="sr-only">Toggle theme</span>
+			</Button>
 		</div>
 	</div>
 </header>
