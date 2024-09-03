@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	// !!! @todo: optimize costs - only fetch once click "Apply filters/Search"; !important
+	// !!! @todo: add search queries (better for SEO, sharing links, etc.)
 
 	// import UI components
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -7,83 +8,72 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import RecipeCard from './_recipe-card.svelte';
+	import type { CreateRecipeFormType } from '../create/_validate';
 
 	export let data;
 
-	const items = [
-		{
-			id: 'beef',
-			text: 'Beef',
-			checked: true
-		},
-		{
-			id: 'pork',
-			text: 'Pork',
-			checked: true
-		},
-		{
-			id: 'chicken',
-			text: 'Chicken',
-			checked: true
-		},
-		{
-			id: 'seafood',
-			text: 'Seafood',
-			checked: true
-		},
-		{
-			id: 'dairy-free',
-			text: 'Dairy-free',
-			checked: false
-		}
-	];
+	// @ts-expect-error - undefined to us is equal to null, no diff
+	let filteredRecipes: Array<Partial<CreateRecipeFormType>> = data.recipes;
 
-	const categories = [
-		'All recipes',
-		'Steaks',
-		'Snacks',
-		'Desserts',
-		'Pancakes',
-		'Mexican',
-		'American',
-		'Grill'
-	];
+	console.log(data.recipes);
+	let searchQuery: string = '';
 
-	$: chosenCategory = $page.url?.searchParams?.get('category') || 'All recipes';
+	const filterNames = ['beef', 'pork', 'chicken', 'seafood', 'dairy-free'];
+	let filters = filterNames.map((name) => ({ text: name, checked: name !== 'dairy-free' }));
+
+	function filterItems(searchQuery: string) {
+		filteredRecipes = (data?.recipes || []).filter((recipe) => {
+			let searchQuerySatisfied = false;
+
+			if (!searchQuery || searchQuery === '') {
+				searchQuerySatisfied = true;
+			} else {
+				const searchQueryLowercase = searchQuery.toLowerCase();
+				searchQuerySatisfied =
+					recipe.title.toLowerCase().includes(searchQueryLowercase) ||
+					(recipe?.description || '').toLowerCase().includes(searchQueryLowercase);
+			}
+
+			let filtersSatisfied = filters.some((filter) => {
+				if (filter.checked && ((recipe?.flags as string[]) || []).includes(filter.text)) {
+					return true;
+				}
+
+				return false;
+			});
+
+			return searchQuerySatisfied && filtersSatisfied;
+		}) as unknown as CreateRecipeFormType[];
+	}
+
+	$: filterItems(searchQuery);
 </script>
 
 <div class="mx-auto mt-12 grid w-[90%] max-w-5xl grid-cols-12">
 	<div class="hidden md:col-span-4 md:block">
 		<div class="mb-12 max-w-48">
 			<h2 class="mb-4 text-xl font-semibold">Search</h2>
-			<Input type="search" placeholder="Search..." class="" />
+			<Input type="search" placeholder="Search..." bind:value={searchQuery} />
 		</div>
 
 		<div class="mb-12">
 			<h2 class="mb-4 text-xl font-semibold">Ingredients</h2>
 			<div class="flex flex-col justify-start gap-3">
-				{#each items as item}
+				{#each filters as filter}
 					<div class="flex items-center space-x-2">
-						<Checkbox id={item.id} bind:checked={item.checked} />
+						<Checkbox
+							id={filter.text}
+							checked={filter.checked}
+							onCheckedChange={() => {
+								filter.checked = !filter.checked;
+								filterItems(searchQuery);
+							}} />
 						<Label
-							for={item.id}
+							for={filter.text}
 							class="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-							{item.text}
+							{filter.text}
 						</Label>
 					</div>
-				{/each}
-			</div>
-		</div>
-
-		<div>
-			<h2 class="mb-4 text-xl font-semibold">Categories</h2>
-			<div class="flex flex-col justify-start gap-2">
-				{#each categories as category}
-					<a
-						href="?category={category}"
-						class={category === chosenCategory ? 'font-medium text-primary underline' : ''}>
-						{category}
-					</a>
 				{/each}
 			</div>
 		</div>
@@ -92,12 +82,12 @@
 	<div class="col-span-12 md:col-span-8">
 		<h1 class="text-xl font-semibold">Recipes</h1>
 
-		{#if data.recipes?.length === 0}
+		{#if filteredRecipes.length === 0}
 			<p class="text mt-3 text-muted-foreground">No recipes found.</p>
 			<Button href="/recipes/create" variant="secondary" class="mt-4">Create recipe</Button>
 		{:else}
 			<div class="mt-8 grid grid-cols-2 gap-4">
-				{#each data.recipes as recipe}
+				{#each filteredRecipes as recipe}
 					<RecipeCard {recipe} />
 				{/each}
 			</div>
