@@ -1,15 +1,19 @@
+import { redirect } from '@sveltejs/kit';
+
 // load function to fetch all the recipes from supabase
 export async function load({ locals: { supabase } }) {
-	const { data: recipes, error } = await supabase.from('recipes').select();
+	// @todo: switch to backend filtering & pagination
+	const { data: recipes, error } = await supabase
+		.from('recipes')
+		.select(
+			'id, title, description, cook_time, prep_time, price_range, user_id, ingredients, flags, slug'
+		);
 
 	console.log('recipes: ', recipes);
 	console.log('error: ', error);
 
 	if (error) {
-		return {
-			status: 500,
-			error: error.message
-		};
+		return redirect(500, '/error');
 	} else {
 		return {
 			status: 200,
