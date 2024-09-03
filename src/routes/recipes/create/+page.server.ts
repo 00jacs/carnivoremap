@@ -11,9 +11,6 @@ export const actions = {
 			return fail(500);
 		}
 
-		console.log('session: ', session);
-		console.log('session user: ', session.user);
-
 		const formData = await request.formData();
 		const { data, error } = CreateRecipeFormDataSchema.safeParse({
 			title: formData.get('title'),
@@ -34,6 +31,8 @@ export const actions = {
 
 		console.log('did not fail, data: ', data);
 
+		// @todo: handle a case when the slug already exists (add -1, -2, etc.)
+		// @todo: add image upload possibility (S3)
 		const { data: supabaseData, error: supabaseError } = await supabase
 			.from('recipes')
 			.insert(data);

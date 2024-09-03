@@ -15,6 +15,7 @@ export type Database = {
 					last_edit_at: string | null;
 					prep_time: string;
 					price_range: string;
+					slug: string;
 					title: string;
 					user_id: string;
 					video_link: string | null;
@@ -30,6 +31,7 @@ export type Database = {
 					last_edit_at?: string | null;
 					prep_time: string;
 					price_range: string;
+					slug: string;
 					title: string;
 					user_id?: string;
 					video_link?: string | null;
@@ -45,6 +47,7 @@ export type Database = {
 					last_edit_at?: string | null;
 					prep_time?: string;
 					price_range?: string;
+					slug?: string;
 					title?: string;
 					user_id?: string;
 					video_link?: string | null;
