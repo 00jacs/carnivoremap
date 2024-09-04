@@ -6,7 +6,7 @@ export async function load({ locals: { supabase } }) {
 	const { data: recipes, error } = await supabase
 		.from('recipes')
 		.select(
-			'id, title, description, cook_time, prep_time, price_range, user_id, ingredients, flags, slug'
+			'id, title, description, cook_time, prep_time, price_range, user_id, ingredients, flags, slug, profiles(id, first_name, username)'
 		);
 
 	console.log('recipes: ', recipes);
