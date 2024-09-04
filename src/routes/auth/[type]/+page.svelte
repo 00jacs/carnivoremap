@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 </script>
 
-<Card.Root class="mx-auto max-w-sm">
+<Card.Root class="mx-auto my-20 max-w-sm">
 	<Card.Header>
 		<Card.Title class="text-xl">
 			{$page.params.type === 'login' ? 'Login' : 'Sign Up'}
@@ -18,23 +18,42 @@
 		</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<form method="POST" action="?/login" class="grid gap-4">
+		<form
+			method="POST"
+			action={$page.params.type === 'login' ? '?/login' : '?/signup'}
+			class="grid gap-4">
 			{#if $page.params.type === 'register'}
 				<div class="grid grid-cols-2 gap-4">
 					<div class="grid gap-2">
-						<Label for="first-name">First name</Label>
-						<Input id="first-name" name="first-name" placeholder="Max" required />
+						<Label for="first_name">First name</Label>
+						<Input id="first_name" name="first_name" placeholder="Max" required />
 					</div>
 					<div class="grid gap-2">
-						<Label for="last-name">Last name</Label>
-						<Input id="last-name" name="last-name" placeholder="Robinson" required />
+						<Label for="last_name">Last name</Label>
+						<Input id="last_name" name="last_name" placeholder="Robinson" required />
 					</div>
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="username">Username</Label>
+					<Input
+						id="username"
+						name="username"
+						placeholder="maxrobinson"
+						autocomplete="username"
+						required />
 				</div>
 			{/if}
 
 			<div class="grid gap-2">
 				<Label for="email">Email</Label>
-				<Input id="email" type="email" name="email" placeholder="m@example.com" required />
+				<Input
+					id="email"
+					type="email"
+					name="email"
+					placeholder="m@example.com"
+					autocomplete="email"
+					required />
 			</div>
 
 			<div class="grid gap-2">
