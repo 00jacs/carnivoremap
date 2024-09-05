@@ -1,30 +1,14 @@
 <script lang="ts">
-	import type { Database } from '$lib/supabase';
-
 	// import necessary icons
 	import UserPen from 'lucide-svelte/icons/user-pen';
 	import Clock from 'lucide-svelte/icons/clock';
 	import CookingPot from 'lucide-svelte/icons/cooking-pot';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
-	import Star from 'lucide-svelte/icons/star';
 
 	// import UI components
 	import * as Card from '$lib/components/ui/card';
-	import { toast } from 'svelte-sonner';
 
-	export let recipe: Database['public']['Tables']['recipes']['Row'];
-
-	let isStarred = false;
-	function starRecipe() {
-		console.log('Starred recipe:', recipe);
-		isStarred = !isStarred;
-
-		if (isStarred) {
-			toast.success('Added recipe to Favorites');
-		} else {
-			toast.info('Removed recipe from Favorites');
-		}
-	}
+	export let recipe;
 </script>
 
 <Card.Root>
@@ -51,12 +35,13 @@
 		</div>
 	</Card.Content>
 	<Card.Footer class="relative">
-		<p class="flex items-center gap-1 text-sm text-muted-foreground">
+		<p class="flex items-center gap-2 text-sm text-muted-foreground">
 			<UserPen class="h-4 w-4" />
 			<!-- todo: fetch username -->
-			{recipe.user_id.slice(0, 8)}...
+			{recipe.profiles.username}
 		</p>
 
+		<!-- @todo: add star functionality to recipes (priority: 8)
 		<button class="absolute bottom-5 right-5" on:click={() => starRecipe()}>
 			{#if isStarred}
 				<Star class="h-5 w-5 fill-yellow-500 text-yellow-400" />
@@ -64,5 +49,6 @@
 				<Star class="h-5 w-5 text-muted-foreground" />
 			{/if}
 		</button>
+    -->
 	</Card.Footer>
 </Card.Root>

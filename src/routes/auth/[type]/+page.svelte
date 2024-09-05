@@ -1,12 +1,20 @@
 <script lang="ts">
+	/* TODO:
+	 * - implement OAuth login (priority: 6)
+	 * - implement form loading state (priority: 8) https://stackoverflow.com/questions/76580769/implementing-a-loading-spinner-in-sveltekit-that-is-triggered-during-an-action
+	 * - improve design on mobile (mobile-first) (priority: 7)
+	 */
+
+	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import InputField from './_input_field.svelte';
+
+	export let form;
 </script>
 
-<Card.Root class="mx-auto max-w-sm">
+<Card.Root class="mx-auto my-20 max-w-sm">
 	<Card.Header>
 		<Card.Title class="text-xl">
 			{$page.params.type === 'login' ? 'Login' : 'Sign Up'}
@@ -18,29 +26,45 @@
 		</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<form method="POST" action="?/login" class="grid gap-4">
+		<form
+			method="POST"
+			action={$page.params.type === 'login' ? '?/signin' : '?/signup'}
+			class="grid gap-8"
+			use:enhance>
 			{#if $page.params.type === 'register'}
 				<div class="grid grid-cols-2 gap-4">
-					<div class="grid gap-2">
-						<Label for="first-name">First name</Label>
-						<Input id="first-name" name="first-name" placeholder="Max" required />
-					</div>
-					<div class="grid gap-2">
-						<Label for="last-name">Last name</Label>
-						<Input id="last-name" name="last-name" placeholder="Robinson" required />
-					</div>
+					<InputField
+						name="first_name"
+						label="First name"
+						placeholder="Max"
+						value={form?.values?.first_name || ''}
+						error={form?.errors?.first_name} />
+
+					<InputField
+						name="last_name"
+						label="Last name"
+						placeholder="Robinson"
+						value={form?.values?.last_name || ''}
+						error={form?.errors?.last_name} />
 				</div>
+
+				<InputField
+					name="username"
+					label="Username"
+					placeholder="maxrobinson"
+					value={form?.values?.username || ''}
+					error={form?.errors?.username} />
 			{/if}
 
-			<div class="grid gap-2">
-				<Label for="email">Email</Label>
-				<Input id="email" type="email" name="email" placeholder="m@example.com" required />
-			</div>
+			<InputField
+				type="email"
+				name="email"
+				label="Email"
+				placeholder="m@example.com"
+				value={form?.values?.email || ''}
+				error={form?.errors?.email} />
 
-			<div class="grid gap-2">
-				<Label for="password">Password</Label>
-				<Input id="password" type="password" name="password" />
-			</div>
+			<InputField type="password" name="password" label="Password" error={form?.errors?.password} />
 
 			<Button type="submit" class="w-full">
 				{$page.params.type === 'login' ? 'Sign in to your account' : 'Create an account'}
