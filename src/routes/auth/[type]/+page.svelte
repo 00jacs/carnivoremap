@@ -1,4 +1,10 @@
 <script lang="ts">
+	/* TODO:
+	 * - implement OAuth login (priority: 6)
+	 * - implement form loading state (priority: 8) https://stackoverflow.com/questions/76580769/implementing-a-loading-spinner-in-sveltekit-that-is-triggered-during-an-action
+	 * - improve design on mobile (mobile-first) (priority: 7)
+	 */
+
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';

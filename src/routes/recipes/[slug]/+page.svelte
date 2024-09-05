@@ -9,28 +9,11 @@
 	import Clock from 'lucide-svelte/icons/clock';
 	import CookingPot from 'lucide-svelte/icons/cooking-pot';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
-	import Star from 'lucide-svelte/icons/star';
-
-	// Import UI components
-	import { Badge } from '$lib/components/ui/badge';
 
 	export let data;
 	let ingredients: Array<{ name: string; quantity: string }> = [];
 
 	let splitContent = data?.recipe?.content?.split('\n') ?? [];
-
-	let isStarred = false;
-
-	// @todo: Implement starring recipes
-	function addRecipeToFavorites() {
-		isStarred = !isStarred;
-
-		if (isStarred) {
-			toast.success('Added recipe to Favorites');
-		} else {
-			toast.info('Removed recipe from Favorites');
-		}
-	}
 
 	onMount(() => {
 		const { data: _ingredients, error } = z
@@ -60,22 +43,6 @@
 {#if data.recipe}
 	<article class="mx-auto mt-12 max-w-2xl px-8 py-16">
 		<header class="mb-12">
-			<button class="mb-6 flex" on:click={addRecipeToFavorites}>
-				{#if !isStarred}
-					<Badge
-						variant="outline"
-						class="flex gap-2 text-muted-foreground  dark:border-yellow-300 dark:border-opacity-60 dark:text-yellow-300 dark:text-opacity-60">
-						<Star class="h-3 w-3" />
-						add to favorites
-					</Badge>
-				{:else}
-					<Badge variant="outline" class="flex gap-2 text-muted-foreground">
-						<Star class="h-3 w-3" />
-						You have saved this recipe - click to remove from favorites
-					</Badge>
-				{/if}
-			</button>
-
 			<h1 class="mb-2 text-3xl font-semibold">
 				{data.recipe.title}
 			</h1>

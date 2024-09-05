@@ -8,14 +8,11 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import RecipeCard from './_recipe-card.svelte';
-	import type { CreateRecipeFormType } from '../create/_validate';
 
 	export let data;
 
-	// @ts-expect-error - undefined to us is equal to null, no diff
-	let filteredRecipes: Array<Partial<CreateRecipeFormType>> = data.recipes;
+	let filteredRecipes: typeof data.recipes = data.recipes;
 
-	console.log(data.recipes);
 	let searchQuery: string = '';
 
 	const filterNames = ['beef', 'pork', 'chicken', 'seafood', 'dairy-free'];
@@ -43,7 +40,7 @@
 			});
 
 			return searchQuerySatisfied && filtersSatisfied;
-		}) as unknown as CreateRecipeFormType[];
+		});
 	}
 
 	$: filterItems(searchQuery);
