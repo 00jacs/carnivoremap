@@ -3,6 +3,9 @@ import { pgTable, uuid, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
 
 export const profiles = pgTable('profile', {
 	id: uuid('id').primaryKey(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	email: text('email').notNull().unique(),
@@ -19,7 +22,7 @@ export interface RecipeIngredient {
 
 export const recipes = pgTable('recipe', {
 	id: uuid('id').defaultRandom().primaryKey(),
-	createdAt: timestamp('creted_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 
 	title: text('title').unique().notNull(),
@@ -39,6 +42,42 @@ export const recipes = pgTable('recipe', {
 		.array()
 		.notNull()
 		.default(sql`ARRAY[]::text[]`), // RECIPE_FLAGS
+
+	authorID: uuid('author_id')
+		.notNull()
+		.references(() => profiles.id)
+});
+
+export const placeReviews = pgTable('place_review', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+
+	content: text('content').notNull(),
+	rating: text('rating').notNull(),
+
+	// meat rating
+	// raw dairy rating
+	// seafood rating
+
+	authorID: uuid('author_id')
+		.notNull()
+		.references(() => profiles.id),
+	placeID: uuid('place_id')
+		.notNull()
+		.references(() => places.id)
+});
+
+/**
+ * - there should not be a possibility to remove the place if there are any reviews (only through reporting)
+ */
+export const places = pgTable('place', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+
+	name: text('name').notNull(),
+	slug: text('slug').notNull().unique(), // a little bit from 'name' and a little bit random
 
 	authorID: uuid('author_id')
 		.notNull()
