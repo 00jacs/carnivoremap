@@ -3,8 +3,7 @@ import type { Database } from '$lib/supabase';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 
-import { PUBLIC_SUPABASE_URL } from '$env/static/public';
-import { PRIVATE_SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 const supabase: Handle = async ({ event, resolve }) => {
 	/**
@@ -18,7 +17,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 	// better way to handle this
 	event.locals.supabase = createServerClient<Database>(
 		PUBLIC_SUPABASE_URL,
-		PRIVATE_SUPABASE_SERVICE_ROLE_KEY,
+		PUBLIC_SUPABASE_ANON_KEY,
 		{
 			cookies: {
 				getAll: () => event.cookies.getAll(),

@@ -1,10 +1,11 @@
 import { fail } from '@sveltejs/kit';
+import { logger } from '$lib/utils/logger';
 import { CreateRecipeFormDataSchema } from './_validate';
 
+import { db, recipes } from '$lib/db';
+
 export const actions = {
-	// action for creating a recipe
-	default: async ({ request, locals: { supabase, safeGetSession } }) => {
-		// 1. Validate if the user is logged in
+	default: async ({ request, locals: { safeGetSession } }) => {
 		const { session } = await safeGetSession();
 
 		if (!session || !session.user) {
@@ -33,15 +34,26 @@ export const actions = {
 
 		// @todo: handle a case when the slug already exists (add -1, -2, etc.)
 		// @todo: add image upload possibility (S3)
-		const { data: supabaseData, error: supabaseError } = await supabase
-			.from('recipes')
-			.insert(data);
 
-		console.log('supabaseData: ', supabaseData);
-		console.log('supabaseError: ', supabaseError);
-
-		if (supabaseError) {
-			return fail(500);
+		try {
+			await db
+				.insert(recipes)
+				.values({
+					title: data.title,
+					slug: data.slug,
+					description: data.description,
+					content: data.content,
+					prepTime: data.prep_time,
+					cookTime: data.cook_time,
+					priceRange: data.price_range,
+					videoLink: data.video_link,
+					ingredients: [{ name: 'test', quantity: 'test' }],
+					flags: data.flags,
+					authorID: session.user.id
+				})
+				.execute();
+		} catch (e) {
+			logger.error('[recipes/create] Error occurred while inserting a new recipe:', e);
 		}
 
 		return {
