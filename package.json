@@ -12,7 +12,7 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"prepare": "husky",
-		"supabase-generate-types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/lib/supabase/database.d.ts"
+		"db:generate": "drizzle-kit generate"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -20,8 +20,10 @@
 		"@sveltejs/vite-plugin-svelte": "^3.1.2",
 		"@types/eslint": "^9.6.0",
 		"autoprefixer": "^10.4.20",
+		"drizzle-kit": "^0.24.2",
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-drizzle": "^0.2.3",
 		"eslint-plugin-svelte": "^2.36.0",
 		"globals": "^15.0.0",
 		"husky": "^9.1.5",
@@ -46,8 +48,10 @@
 		"bits-ui": "^0.21.13",
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.18",
+		"drizzle-orm": "^0.33.0",
 		"lucide-svelte": "^0.437.0",
 		"mode-watcher": "^0.4.1",
+		"postgres": "^3.4.4",
 		"svelte-sonner": "^0.3.27",
 		"tailwind-merge": "^2.5.2",
 		"tailwind-variants": "^0.2.1",

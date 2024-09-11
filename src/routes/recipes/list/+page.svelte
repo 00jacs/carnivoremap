@@ -11,6 +11,8 @@
 
 	export let data;
 
+	console.log(data.recipes);
+
 	let filteredRecipes: typeof data.recipes = data.recipes;
 
 	let searchQuery: string = '';
