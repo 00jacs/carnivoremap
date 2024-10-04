@@ -5,7 +5,10 @@
   import { getGeocoding } from '$lib/api/google-maps';
   import { Search, X, MapPinned } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
-  import { type PlaceFlag } from './form/form.ts';
+  import {
+    CreatePlaceFlags as PlaceFlags,
+    type PlaceFlag
+  } from './form/form.ts';
 
   const DEFAULT_MARKER_SIZE = 50;
 
@@ -18,6 +21,8 @@
 
   let loading = $state(false);
   let map: mapboxgl.Map | null = null;
+  let places: any[] | null = null;
+  let _markers: any[] = [];
 
   $effect(() => {
     loading = true;
@@ -34,21 +39,26 @@
         return;
       }
 
-      const places = await response.json();
-      // @todo: parse places with zod
+      places = ((await response.json()) as any[])?.map((place) => ({
+        ...place,
+        flags: Object.keys(place)
+          .filter((key) => key.startsWith('flag') && place[key])
+          .map((key) => key.split('flag')[1].toLowerCase())
+      }));
+
       console.log('places: ', places);
+      // @todo: parse places with zod
 
       const markers = places.map((place) => ({
         id: place.id,
         title: place.title,
         description: place.description,
-        flags: Object.keys(place)
-          .filter((key) => key.startsWith('flag') && place[key])
-          .map((key) => key.split('flag')[1].toLowerCase()),
+        flags: place.flags,
         location: {
           lat: place.coordinates.x,
           lng: place.coordinates.y
-        }
+        },
+        iconSize: [50, 50] // depending on the rating?
       }));
 
       // mapbox
@@ -71,6 +81,7 @@
         const width = marker?.iconSize?.[0] || DEFAULT_MARKER_SIZE;
         const height = marker?.iconSize?.[1] || DEFAULT_MARKER_SIZE;
 
+        el.id = `${marker.id}`; // optimization: shorten this?
         el.className = 'map-marker';
         el.innerHTML = icons?.[marker.flags[0]] || '🤷🏻‍♂️';
         el.style.width = `${width}px`;
@@ -81,9 +92,11 @@
         });
 
         // Add markers to the map.
-        new mapboxgl.Marker(el)
-          .setLngLat([marker.location.lng, marker.location.lat])
-          .addTo(map);
+        _markers.push(
+          new mapboxgl.Marker(el)
+            .setLngLat([marker.location.lng, marker.location.lat])
+            .addTo(map)
+        );
       }
 
       // console.log(map);
@@ -162,13 +175,116 @@
 
     console.log('searching for place...', searchInput);
   }
+
+  const filters = $state<{ key: PlaceFlag; label: string; checked: boolean }[]>(
+    [
+      {
+        key: 'butcher',
+        label: 'Butcher',
+        checked: true
+      },
+      {
+        key: 'dairy',
+        label: 'Raw dairy',
+        checked: true
+      },
+      {
+        key: 'fish',
+        label: 'Fish',
+        checked: true
+      },
+      {
+        key: 'honey',
+        label: 'Honey',
+        checked: true
+      },
+      {
+        key: 'restaurant',
+        label: 'Restaurant',
+        checked: true
+      }
+    ]
+  );
+
+  function filterPlaces() {
+    const activeFilters = filters
+      .filter((filter) => filter.checked)
+      .map((filter) => filter.key);
+
+    const filteredPlaces =
+      places?.filter((place) =>
+        place.flags.some((flag) => activeFilters.includes(flag))
+      ) || [];
+
+    console.log('filtered places: ', filteredPlaces);
+
+    const currentMarkerIds = _markers.map((_marker) =>
+      _marker._element.getAttribute('id')
+    );
+
+    for (let i = 0; i < _markers.length; i++) {
+      const marker = _markers[i];
+      const markerId = marker._element.getAttribute('id');
+      console.log('marker id: ', markerId);
+
+      if (!filteredPlaces.find((place) => place.id === markerId)) {
+        marker.remove();
+        _markers.splice(i, 1);
+        i--;
+      }
+    }
+
+    if (!map) {
+      console.error(
+        'It seems that there is no map, so where should we add markers to?'
+      );
+      return;
+    }
+
+    // let's add all the non-existing markers
+    for (const place of filteredPlaces) {
+      if (!currentMarkerIds.includes(place.id)) {
+        // Create a DOM element for each marker.
+        const el = document.createElement('div');
+
+        // maybe size depending on the rating?
+        const width = DEFAULT_MARKER_SIZE;
+        const height = DEFAULT_MARKER_SIZE;
+
+        el.id = `${place.id}`; // optimization: shorten this?
+        el.className = 'map-marker';
+        el.innerHTML = icons?.[place.flags[0]] || '🤷🏻‍♂️';
+        el.style.width = `${width}px`;
+        el.style.height = `${height}px`;
+
+        el.addEventListener('click', () => {
+          selectedPlace = place;
+        });
+
+        console.log('place: ', place);
+
+        // Add markers to the map.
+        _markers.push(
+          new mapboxgl.Marker(el)
+            .setLngLat([place.coordinates.y, place.coordinates.x])
+            .addTo(map)
+        );
+      }
+    }
+
+    console.log('filtered places: ', filteredPlaces);
+    changedFilters = false;
+    return filteredPlaces;
+  }
+
+  let changedFilters = $state(false);
 </script>
 
 {#if loading}
   Loading...
 {/if}
 
-<div class="mx-auto max-w-3xl px-8 pt-12">
+<div class="mx-auto max-w-4xl px-8 pt-12">
   <div>
     <h1 class="text-2xl font-bold md:text-3xl">Search our carnivore map</h1>
     <p class="mb-6 mt-2 text-sm opacity-70">
@@ -204,6 +320,35 @@
         </button>
       </form>
     </label>
+
+    <div>
+      <span class="mb-3 block font-bold">I'm looking for...</span>
+      <div class="flex flex-wrap justify-between gap-y-4">
+        {#each filters as filter, i}
+          <label
+            for="filter-{filter.key}"
+            class="flex items-center justify-start gap-2">
+            <span>{filter.label}</span>
+            <input
+              id="filter-{filter.key}"
+              type="checkbox"
+              class="checkbox"
+              onchange={() => (changedFilters = true)}
+              bind:checked={filter.checked} />
+          </label>
+
+          <div class="divider divider-horizontal"></div>
+
+          {#if i === filters.length - 1}
+            <button
+              class="btn {changedFilters ? 'btn-error' : 'btn-outline'}"
+              onclick={filterPlaces}>
+              Apply filters
+            </button>
+          {/if}
+        {/each}
+      </div>
+    </div>
   </div>
 </div>
 
