@@ -19,6 +19,7 @@
 		"@types/eslint": "^9.6.0",
 		"@types/eslint__js": "^8.42.3",
 		"@types/eslint-config-prettier": "^6.11.3",
+		"@types/google.maps": "^3.58.1",
 		"autoprefixer": "^10.4.20",
 		"daisyui": "^4.12.11",
 		"drizzle-kit": "^0.24.2",
@@ -40,6 +41,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@googlemaps/js-api-loader": "^1.16.8",
 		"drizzle-orm": "^0.33.0",
 		"lucide-svelte": "^0.447.0",
 		"mapbox-gl": "^3.7.0",

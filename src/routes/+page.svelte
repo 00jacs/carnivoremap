@@ -2,16 +2,15 @@
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
+  import { type PlaceFlag } from './form/form.ts';
 
   const DEFAULT_MARKER_SIZE = 50;
-
-  type MarkerFlag = 'butcher' | 'fish' | 'rawDairy' | 'restaurant';
 
   interface Marker {
     id: string;
     title: string;
     description: string;
-    flags: MarkerFlag[];
+    flags: PlaceFlag[];
     iconSize?: [number, number];
     rating: number;
     location: {
@@ -67,14 +66,17 @@
     }
   ];
 
-  const icons: Record<MarkerFlag, string> = {
+  const icons: Record<PlaceFlag, string> = {
     butcher: '🥩',
     fish: '🐟',
-    rawDairy: '🥛',
+    dairy: '🥛',
     restaurant: '🍽️'
   };
 
+  let loading = $state(false);
+
   $effect(() => {
+    loading = true;
     (async () => {
       const response = await fetch('/', {
         method: 'GET',
@@ -85,12 +87,41 @@
 
       console.log('response: ', response);
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         console.error('Error...', response);
         return;
       }
 
-      console.log('fetched places: ', response.body);
+      // {
+      //   id: '3-uuid-of-the-place-will-be-here',
+      //   title: 'Fisherman',
+      //   flags: ['fish'],
+      //   description: 'A fish shop',
+      //   rating: 4.8,
+      //   location: {
+      //     lat: -63.292236,
+      //     lng: -18.281518
+      //   }
+      // }
+
+      const places = await response.json();
+      // @todo: parse places with zod
+      console.log('places: ', places);
+
+      const markers = places.map((place) => ({
+        id: place.id,
+        title: place.title,
+        description: place.description,
+        flags: Object.keys(place)
+          .filter((key) => key.startsWith('flag') && place[key])
+          .map((key) => key.split('flag')[1].toLowerCase()),
+        location: {
+          lat: place.coordinates.x,
+          lng: place.coordinates.y
+        }
+      }));
+
+      console.log('marker flags: ', markers);
 
       // mapbox
       mapboxgl.accessToken = PUBLIC_MAPBOX_KEY;
@@ -123,16 +154,20 @@
 
         // Add markers to the map.
         new mapboxgl.Marker(el)
-          .setLngLat([marker.location.lat, marker.location.lng])
+          .setLngLat([marker.location.lng, marker.location.lat])
           .addTo(map);
       }
 
       // console.log(map);
+      loading = false;
     })();
   });
 </script>
 
-<div>Map of places!</div>
+{#if loading}
+  Loading...
+{/if}
+
 <div id="map" style="height: 500px; width: 500px;"></div>
 
 <style lang="postcss">

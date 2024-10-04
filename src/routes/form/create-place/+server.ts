@@ -18,11 +18,22 @@ export async function POST({ request }) {
 
   console.log('result data: ', data);
 
+  if (!data.location.lat || !data.location.lng) {
+    console.error('[create-place/server.ts] Strange? Received data without lat and lng.');
+    return error(400, 'Please confirm the location of the place before submitting it. We need to process its exact coordinates.');
+  }
+
   try {
     await db.insert(places).values({
       ...data.general,
       ...data.location,
-      coordinates: { x: data.location.lat, y: data.location.lng }
+      coordinates: { x: +data.location.lat, y: +data.location.lng },
+
+      flagButcher: data.general.flags.includes('butcher'),
+      flagFish: data.general.flags.includes('fish'),
+      flagDairy: data.general.flags.includes('dairy'),
+      flagHoney: data.general.flags.includes('honey'),
+      flagRestaurant: data.general.flags.includes('restaurant'),
     });
   } catch (e) {
     console.warn('Could not insert into database: ', e);

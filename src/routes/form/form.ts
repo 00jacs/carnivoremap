@@ -6,7 +6,8 @@ const v = {
   string: (fieldName: string, minLength: number, maxLength: number) => z.string().min(minLength, `The ${fieldName} needs to have at least ${minLength} characters`).max(maxLength, `The ${fieldName} can have at most ${maxLength} characters`)
 }
 
-export const CreatePlaceFlags = ['butcher', 'fish', 'honey', 'rawDairy'] as const;
+export const CreatePlaceFlags = ['butcher', 'fish', 'honey', 'dairy', 'restaurant'] as const;
+export type PlaceFlag = typeof CreatePlaceFlags[number];
 
 export const CreatePlaceFormCacheSchema = z.object({
   general: z.object({
@@ -20,8 +21,8 @@ export const CreatePlaceFormCacheSchema = z.object({
     postalCode: z.string().default(''),
     city: z.string().default(''),
     country: z.string().default(''),
-    lat: z.string().optional().default(''),
-    lng: z.string().optional().default('')
+    lat: z.null(), // we do not want to cache lat, user needs to re-confirm location
+    lng: z.null()  // we do not want to cache lng, user needs to re-confirm location
   })
 });
 
@@ -37,8 +38,8 @@ export const CreatePlaceFormSchema = z.object({
     postalCode: v.string('postal code', 2, 8),
     city: v.string('city', 2, 32),
     country: v.string('country', 2, 32),
-    lat: z.string().optional(),
-    lng: z.string().optional()
+    lat: z.coerce.number().or(z.null()),
+    lng: z.coerce.number().or(z.null())
   })
 });
 
@@ -81,8 +82,8 @@ const emptyForm: CreatePlaceForm = {
     streetNumber: '',
     city: '',
     country: '',
-    lat: '',
-    lng: ''
+    lat: null,
+    lng: null
   }
 }
 

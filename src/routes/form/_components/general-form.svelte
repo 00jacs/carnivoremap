@@ -20,7 +20,7 @@
       label: 'Is a butcher shop?'
     },
     {
-      key: 'rawDairy',
+      key: 'dairy',
       label: 'Sells raw dairy?'
     },
     {
@@ -30,6 +30,10 @@
     {
       key: 'honey',
       label: 'Sells raw honey?'
+    },
+    {
+      key: 'restaurant',
+      label: 'Is it a carnivore/keto-friendly restaurant?'
     }
   ] as const;
 </script>
