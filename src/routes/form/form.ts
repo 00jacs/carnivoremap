@@ -38,8 +38,8 @@ export const CreatePlaceFormSchema = z.object({
     postalCode: v.string('postal code', 2, 8),
     city: v.string('city', 2, 32),
     country: v.string('country', 2, 32),
-    lat: z.coerce.number().or(z.null()),
-    lng: z.coerce.number().or(z.null())
+    lat: z.union([z.null(), z.coerce.number()]),
+    lng: z.union([z.null(), z.coerce.number()])
   })
 });
 
@@ -108,7 +108,7 @@ form.subscribe(currentForm => {
   }, FORM_CACHING_TIMEOUT);
 });
 
-export function clearFormCache() {
+export function clearFormCache(): void {
   if (typeof localStorage === 'undefined') {
     return;
   }

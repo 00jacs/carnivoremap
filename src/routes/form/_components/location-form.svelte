@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { form } from '../form';
+  import { form, type CreatePlaceForm } from '../form';
   import { MapPin, MapPinCheck, MapPinCheckInside, X } from 'lucide-svelte';
 
   import { Loader } from '@googlemaps/js-api-loader';
@@ -43,32 +43,32 @@
 
   let popupEl: HTMLDialogElement | null;
   let isLocationConfirmed = $state(false);
+  let coordinates = $state<{ lat: number; lng: number } | null>(null);
 
-  let map;
-  let geocoder;
-  let coordinates;
-  let _AdvancedMarkerElement;
+  const loader = new Loader({
+    apiKey: PUBLIC_GOOGLE_MAPS_API_KEY,
+    version: 'weekly'
+  });
+
+  let map: google.maps.Map | null = null;
+  let geocoder: google.maps.Geocoder | null = null;
 
   async function handleConfirmLocation() {
     for (const key of Object.keys($form.location)) {
-      if (key !== 'lat' && key !== 'lng' && !$form.location[key]) {
+      if (
+        key !== 'lat' &&
+        key !== 'lng' &&
+        !$form.location[key as keyof CreatePlaceForm['location']]
+      ) {
         alert(`Please fill in all the location fields: ${key}`);
         return;
       }
     }
+
     popupEl?.showModal();
     // @todo: consider showing loading screen in the popup
 
-    const loader = new Loader({
-      apiKey: PUBLIC_GOOGLE_MAPS_API_KEY,
-      version: 'weekly'
-    });
-
-    await loader.load();
-
-    const { Map } = (await google.maps.importLibrary(
-      'maps'
-    )) as google.maps.MapsLibrary;
+    const { Map } = await loader.importLibrary('maps');
 
     map = new Map(document.getElementById('map') as HTMLElement, {
       mapId: 'confirmation-map-id',
@@ -76,32 +76,26 @@
       zoom: 15
     });
 
-    const { LatLngBounds } = (await google.maps.importLibrary(
-      'core'
-    )) as google.maps.CoreLibrary;
-    const { Geocoder } = (await google.maps.importLibrary(
-      'geocoding'
-    )) as google.maps.GeocodingLibrary;
-
+    const { Geocoder } = await loader.importLibrary('geocoding');
     geocoder = new Geocoder();
 
-    const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
-    _AdvancedMarkerElement = AdvancedMarkerElement;
+    const { AdvancedMarkerElement } = await loader.importLibrary('marker');
 
     geocoder.geocode(
       {
         address: `${$form.location.streetAddress} ${$form.location.streetNumber}, ${$form.location.city} ${$form.location.postalCode}, ${$form.location.country}`
       },
       function (results, status) {
-        console.log('results: ', results[0]);
-        console.log(
-          'results location geometry to json: ',
-          results[0].geometry.location.toJSON()
-        );
-
         if (status == 'OK') {
-          map.setCenter(results[0].geometry.location);
-          var marker = new _AdvancedMarkerElement({
+          if (!results?.[0] || !results?.[0]?.geometry?.location) {
+            alert('Error when getting geometry location...');
+            return;
+          }
+
+          map?.setCenter(results[0].geometry.location);
+
+          // create a marker for the given address
+          new AdvancedMarkerElement({
             map: map,
             position: results[0].geometry.location
           });
@@ -162,8 +156,16 @@
         onclick={() => {
           isLocationConfirmed = true;
           popupEl?.close();
-          $form.location.lat = coordinates.lat;
-          $form.location.lng = coordinates.lng;
+
+          if (!coordinates) {
+            console.error(
+              'No coordinates could be found even though the user has confirmed.'
+            );
+            return;
+          }
+
+          $form.location.lat = coordinates.lat + '';
+          $form.location.lng = coordinates.lng + '';
         }}>
         <MapPinCheckInside class="h-4 w-4" />Confirm location
       </button>
@@ -172,11 +174,13 @@
 </dialog>
 
 <section class="grid grid-cols-6 gap-4 md:grid-cols-12">
-  {#each location as { key, width, label }}
+  {#each location as { key, width, label, placeholder }}
     <label for={key} class="col-span-{width} flex flex-col gap-2">
       <span class="block font-semibold">{label}</span>
       <input
         class="input input-bordered"
+        {placeholder}
+        required
         bind:value={$form.location[key]}
         oninput={() => (isLocationConfirmed = false)} />
     </label>

@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { fade } from 'svelte/transition';
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
+  import { Search, X } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
   import { type PlaceFlag } from './form/form.ts';
 
@@ -85,24 +87,10 @@
         }
       });
 
-      console.log('response: ', response);
-
       if (!response.ok) {
         console.error('Error...', response);
         return;
       }
-
-      // {
-      //   id: '3-uuid-of-the-place-will-be-here',
-      //   title: 'Fisherman',
-      //   flags: ['fish'],
-      //   description: 'A fish shop',
-      //   rating: 4.8,
-      //   location: {
-      //     lat: -63.292236,
-      //     lng: -18.281518
-      //   }
-      // }
 
       const places = await response.json();
       // @todo: parse places with zod
@@ -121,8 +109,6 @@
         }
       }));
 
-      console.log('marker flags: ', markers);
-
       // mapbox
       mapboxgl.accessToken = PUBLIC_MAPBOX_KEY;
 
@@ -130,8 +116,8 @@
         container: 'map',
         // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-65.017, -16.457],
-        zoom: 5
+        center: [19.9267172, 50.0772341],
+        zoom: 2
       });
 
       map.addControl(new mapboxgl.NavigationControl());
@@ -149,7 +135,7 @@
         el.style.height = `${height}px`;
 
         el.addEventListener('click', () => {
-          window.alert(marker.title);
+          selectedPlace = marker;
         });
 
         // Add markers to the map.
@@ -162,13 +148,60 @@
       loading = false;
     })();
   });
+
+  let selectedPlace = $state<any>(null);
 </script>
 
 {#if loading}
   Loading...
 {/if}
 
-<div id="map" style="height: 500px; width: 500px;"></div>
+<div class="mx-auto max-w-3xl px-8 pt-12">
+  <div>
+    <h1 class="text-2xl font-bold md:text-3xl">Search our carnivore map</h1>
+    <p class="mb-6 mt-2 text-sm opacity-70">
+      Find our carnivore/ketovoore-friendly places added by our users. The
+      website fully depends on voluntary contributions so feel free to add your
+      review or <a href="/form/create-place" class="link">
+        add a place of your choice.
+      </a>
+    </p>
+
+    <label for="location-search" class="mb-8 block">
+      <span class="mb-2 block font-bold">Search by your location</span>
+      <div class="flex items-center justify-start gap-2">
+        <input
+          id="location-search"
+          class="input input-bordered"
+          placeholder="Your location..." />
+        <button class="btn btn-outline"><Search /></button>
+      </div>
+    </label>
+  </div>
+</div>
+
+<div class="mt-12 w-full {selectedPlace ? 'grid grid-cols-12' : ''}">
+  <div
+    id="map"
+    class="col-span-8 h-[640px] max-h-[60vh] w-full"
+    class:rounded-r={selectedPlace}>
+  </div>
+
+  <!-- On mobile, this should be a pop-up -->
+  {#if selectedPlace}
+    <div class="col-span-4 px-4" transition:fade>
+      <div class="relative rounded border px-4 py-3">
+        <button
+          class="absolute right-4 top-4"
+          onclick={() => (selectedPlace = null)}>
+          <X class="h-4 w-4" />
+        </button>
+        <h2 class="font-bold md:text-2xl">{selectedPlace.title}</h2>
+        <p class="mb-4 mt-1 text-sm">{selectedPlace.description}</p>
+      </div>
+    </div>
+  {/if}
+</div>
 
 <style lang="postcss">
   :global(.map-marker) {

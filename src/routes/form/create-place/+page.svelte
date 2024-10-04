@@ -6,6 +6,7 @@
     type CreatePlaceForm,
     ZodError
   } from '../form';
+  import { MapPinPlus } from 'lucide-svelte';
   import GeneralForm from '../_components/general-form.svelte';
   import LocationForm from '../_components/location-form.svelte';
 
@@ -23,16 +24,21 @@
       parsed = CreatePlaceFormSchema.parse($form);
     } catch (e) {
       if (e instanceof ZodError) {
-        const formattedError = e?.format();
-        console.log(formattedError);
+        for (const err in e.flatten()?.fieldErrors) {
+          if (err?.length) {
+            loading = false;
+            error = err[0];
+            alert(error);
+            return;
+          }
+        }
       }
 
       loading = false;
       error = 'Error! ' + JSON.stringify(e);
+      alert(error);
       return;
     }
-
-    console.log('parsed: ', parsed);
 
     try {
       const response = await fetch('/form/create-place', {
@@ -43,9 +49,11 @@
         }
       });
 
-      console.log('response: ', response);
+      if (!response.ok) {
+        throw new Error('Could not send a request. Please contact support.');
+      }
     } catch (e) {
-      console.log('error: ', e);
+      alert(e);
     } finally {
       loading = false;
     }
@@ -57,7 +65,7 @@
 {/if}
 
 {#if error}
-  <p>Error...</p>
+  <p>Error... {error}</p>
 {/if}
 
 <form
@@ -73,8 +81,10 @@
   <GeneralForm />
   <div class="divider mb-12 mt-10"></div>
   <LocationForm />
+  <div class="divider mb-12 mt-10"></div>
 
-  <button type="submit" class="btn btn-primary">Submit...</button>
+  <button type="submit" class="btn btn-primary w-full">
+    <MapPinPlus class="h-4 w-4" />
+    Add place
+  </button>
 </form>
-
-<div>Create place!</div>
