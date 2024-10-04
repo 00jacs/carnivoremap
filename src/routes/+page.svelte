@@ -2,71 +2,12 @@
   import { fade } from 'svelte/transition';
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
-  import { Search, X } from 'lucide-svelte';
+  import { getGeocoding } from '$lib/api/google-maps';
+  import { Search, X, MapPinned } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
   import { type PlaceFlag } from './form/form.ts';
 
   const DEFAULT_MARKER_SIZE = 50;
-
-  interface Marker {
-    id: string;
-    title: string;
-    description: string;
-    flags: PlaceFlag[];
-    iconSize?: [number, number];
-    rating: number;
-    location: {
-      lat: number;
-      lng: number;
-    };
-  }
-
-  const markers: Marker[] = [
-    {
-      id: 'uuid-of-the-place-will-be-here',
-      title: 'Gourmeat',
-      description: 'A butcher shop',
-      flags: ['butcher', 'rawDairy', 'restaurant'],
-      rating: 4.8,
-      location: {
-        lat: -66.324462,
-        lng: -16.024695
-      }
-    },
-    {
-      id: '2-uuid-of-the-place-will-be-here',
-      title: 'Gourmeat',
-      description: 'A butcher shop',
-      flags: ['rawDairy'],
-      rating: 4.8,
-      location: {
-        lat: -61.21582,
-        lng: -15.971891
-      }
-    },
-    {
-      id: '3-uuid-of-the-place-will-be-here',
-      title: 'Gourmeat',
-      flags: ['restaurant'],
-      description: 'A butcher shop',
-      rating: 4.8,
-      location: {
-        lat: -63.292236,
-        lng: -18.281518
-      }
-    },
-    {
-      id: '3-uuid-of-the-place-will-be-here',
-      title: 'Fisherman',
-      flags: ['fish'],
-      description: 'A fish shop',
-      rating: 4.8,
-      location: {
-        lat: -63.292236,
-        lng: -18.281518
-      }
-    }
-  ];
 
   const icons: Record<PlaceFlag, string> = {
     butcher: '🥩',
@@ -76,6 +17,7 @@
   };
 
   let loading = $state(false);
+  let map: mapboxgl.Map | null = null;
 
   $effect(() => {
     loading = true;
@@ -112,7 +54,7 @@
       // mapbox
       mapboxgl.accessToken = PUBLIC_MAPBOX_KEY;
 
-      const map = new mapboxgl.Map({
+      map = new mapboxgl.Map({
         container: 'map',
         // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
         style: 'mapbox://styles/mapbox/streets-v12',
@@ -149,7 +91,77 @@
     })();
   });
 
+  let searchInput = $state<string>('');
   let selectedPlace = $state<any>(null);
+  let geocoder: google.maps.Geocoder;
+
+  $effect(() => {
+    (async () => {
+      const Geocoder = await getGeocoding();
+      geocoder = new Geocoder();
+    })();
+  });
+
+  function getUserLocation() {
+    if (navigator?.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          map?.flyTo({
+            center: [lng, lat],
+            zoom: 10
+          });
+        },
+        (error) => {
+          console.error('There was an error getting your geolocation: ', error);
+          alert(
+            'There was an error getting your geolocation. Please try entering your address'
+          );
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+      alert('Geolocation is not supported by this browser');
+    }
+  }
+
+  function handleSearchLocation(e?: SubmitEvent) {
+    e?.preventDefault();
+
+    if (!e) {
+      getUserLocation();
+    } else {
+      geocoder?.geocode(
+        {
+          address: searchInput
+        },
+        function (results, status) {
+          if (status == 'OK') {
+            if (!results?.[0] || !results?.[0]?.geometry?.location) {
+              alert('Error when getting geometry location...');
+              return;
+            }
+
+            map?.flyTo({
+              center: [
+                results[0].geometry.location.lng(),
+                results[0].geometry.location.lat()
+              ],
+              zoom: 10
+            });
+          } else {
+            alert(
+              'Geocode was not successful for the following reason: ' + status
+            );
+          }
+        }
+      );
+    }
+
+    console.log('searching for place...', searchInput);
+  }
 </script>
 
 {#if loading}
@@ -160,7 +172,7 @@
   <div>
     <h1 class="text-2xl font-bold md:text-3xl">Search our carnivore map</h1>
     <p class="mb-6 mt-2 text-sm opacity-70">
-      Find our carnivore/ketovoore-friendly places added by our users. The
+      Find our carnivore/ketovore-friendly places added by our users. The
       website fully depends on voluntary contributions so feel free to add your
       review or <a href="/form/create-place" class="link">
         add a place of your choice.
@@ -168,14 +180,29 @@
     </p>
 
     <label for="location-search" class="mb-8 block">
-      <span class="mb-2 block font-bold">Search by your location</span>
-      <div class="flex items-center justify-start gap-2">
-        <input
-          id="location-search"
-          class="input input-bordered"
-          placeholder="Your location..." />
-        <button class="btn btn-outline"><Search /></button>
-      </div>
+      <span class="mb-2 block font-bold">Search by location</span>
+
+      <form
+        class="flex items-center justify-between gap-2"
+        onsubmit={handleSearchLocation}>
+        <div class="flex items-center justify-start gap-2">
+          <input
+            id="location-search"
+            class="min-w-sm input input-bordered w-72"
+            placeholder="Your location..."
+            bind:value={searchInput} />
+
+          <button type="submit" class="btn btn-outline"><Search /></button>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline"
+          onclick={() => handleSearchLocation()}>
+          <MapPinned class="h-4 w-4" />
+          Search by my current location
+        </button>
+      </form>
     </label>
   </div>
 </div>

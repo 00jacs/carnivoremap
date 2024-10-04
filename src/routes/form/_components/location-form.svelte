@@ -1,9 +1,7 @@
 <script lang="ts">
   import { form, type CreatePlaceForm } from '../form';
+  import { getGoogleMapsLibs } from '$lib/api/google-maps';
   import { MapPin, MapPinCheck, MapPinCheckInside, X } from 'lucide-svelte';
-
-  import { Loader } from '@googlemaps/js-api-loader';
-  import { PUBLIC_GOOGLE_MAPS_API_KEY } from '$env/static/public';
 
   const location = [
     {
@@ -45,11 +43,6 @@
   let isLocationConfirmed = $state(false);
   let coordinates = $state<{ lat: number; lng: number } | null>(null);
 
-  const loader = new Loader({
-    apiKey: PUBLIC_GOOGLE_MAPS_API_KEY,
-    version: 'weekly'
-  });
-
   let map: google.maps.Map | null = null;
   let geocoder: google.maps.Geocoder | null = null;
 
@@ -68,20 +61,16 @@
     popupEl?.showModal();
     // @todo: consider showing loading screen in the popup
 
-    const { Map } = await loader.importLibrary('maps');
+    const { Map, Geocoder, AdvancedMarkerElement } = await getGoogleMapsLibs();
 
+    geocoder = new Geocoder();
     map = new Map(document.getElementById('map') as HTMLElement, {
       mapId: 'confirmation-map-id',
       center: { lat: -34.397, lng: 150.644 },
       zoom: 15
     });
 
-    const { Geocoder } = await loader.importLibrary('geocoding');
-    geocoder = new Geocoder();
-
-    const { AdvancedMarkerElement } = await loader.importLibrary('marker');
-
-    geocoder.geocode(
+    geocoder?.geocode(
       {
         address: `${$form.location.streetAddress} ${$form.location.streetNumber}, ${$form.location.city} ${$form.location.postalCode}, ${$form.location.country}`
       },
