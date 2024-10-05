@@ -3,12 +3,17 @@
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
   import { getGeocoding } from '$lib/api/google-maps';
-  import { Search, X, MapPinned } from 'lucide-svelte';
+  import { Search, X, MapPinned, ArrowUp } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
+
   import {
     CreatePlaceFlags as PlaceFlags,
     type PlaceFlag
   } from './form/form.ts';
+
+  let { data } = $props();
+  let { places } = data;
+  console.log('places: ', places);
 
   const DEFAULT_MARKER_SIZE = 50;
 
@@ -21,47 +26,52 @@
 
   let loading = $state(false);
   let map: mapboxgl.Map | null = null;
-  let places: any[] | null = null;
   let _markers: any[] = [];
+
+  function addPlaceMarkerToMap(
+    place: {
+      id: string;
+      flags: PlaceFlag[];
+      coordinates: { x: number; y: number };
+    },
+    width = DEFAULT_MARKER_SIZE,
+    height = DEFAULT_MARKER_SIZE
+  ) {
+    if (!map) {
+      console.error('There is no map to add the place to.');
+      return;
+    }
+
+    const el = document.createElement('div');
+
+    el.id = `${place.id}`; // optimization: shorten this?
+    el.className = 'map-marker';
+    el.innerHTML =
+      place.flags.length > 1 ? '📍' : icons?.[place.flags[0]] || '🤷🏻‍♂️';
+    el.style.width = `${width}px`;
+    el.style.height = `${height}px`;
+
+    el.addEventListener('click', () => {
+      selectedPlace = place;
+      setTimeout(() => {
+        document.getElementById('selected-place')?.scrollIntoView();
+      }, 200);
+    });
+
+    // Add markers to the map.
+    _markers.push(
+      new mapboxgl.Marker(el)
+        .setLngLat([place.coordinates.y, place.coordinates.x])
+        .addTo(map)
+    );
+  }
 
   $effect(() => {
     loading = true;
     (async () => {
-      const response = await fetch('/', {
-        method: 'GET',
-        headers: {
-          'content-type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        console.error('Error...', response);
-        return;
-      }
-
-      places = ((await response.json()) as any[])?.map((place) => ({
-        ...place,
-        flags: Object.keys(place)
-          .filter((key) => key.startsWith('flag') && place[key])
-          .map((key) => key.split('flag')[1].toLowerCase())
-      }));
-
       console.log('places: ', places);
       // @todo: parse places with zod
 
-      const markers = places.map((place) => ({
-        id: place.id,
-        title: place.title,
-        description: place.description,
-        flags: place.flags,
-        location: {
-          lat: place.coordinates.x,
-          lng: place.coordinates.y
-        },
-        iconSize: [50, 50] // depending on the rating?
-      }));
-
-      // mapbox
       mapboxgl.accessToken = PUBLIC_MAPBOX_KEY;
 
       map = new mapboxgl.Map({
@@ -74,32 +84,10 @@
 
       map.addControl(new mapboxgl.NavigationControl());
 
-      // Add markers to the map.
-      for (const marker of markers) {
-        // Create a DOM element for each marker.
-        const el = document.createElement('div');
-        const width = marker?.iconSize?.[0] || DEFAULT_MARKER_SIZE;
-        const height = marker?.iconSize?.[1] || DEFAULT_MARKER_SIZE;
-
-        el.id = `${marker.id}`; // optimization: shorten this?
-        el.className = 'map-marker';
-        el.innerHTML = icons?.[marker.flags[0]] || '🤷🏻‍♂️';
-        el.style.width = `${width}px`;
-        el.style.height = `${height}px`;
-
-        el.addEventListener('click', () => {
-          selectedPlace = marker;
-        });
-
-        // Add markers to the map.
-        _markers.push(
-          new mapboxgl.Marker(el)
-            .setLngLat([marker.location.lng, marker.location.lat])
-            .addTo(map)
-        );
+      for (const place of places) {
+        addPlaceMarkerToMap(place);
       }
 
-      // console.log(map);
       loading = false;
     })();
   });
@@ -244,31 +232,7 @@
     // let's add all the non-existing markers
     for (const place of filteredPlaces) {
       if (!currentMarkerIds.includes(place.id)) {
-        // Create a DOM element for each marker.
-        const el = document.createElement('div');
-
-        // maybe size depending on the rating?
-        const width = DEFAULT_MARKER_SIZE;
-        const height = DEFAULT_MARKER_SIZE;
-
-        el.id = `${place.id}`; // optimization: shorten this?
-        el.className = 'map-marker';
-        el.innerHTML = icons?.[place.flags[0]] || '🤷🏻‍♂️';
-        el.style.width = `${width}px`;
-        el.style.height = `${height}px`;
-
-        el.addEventListener('click', () => {
-          selectedPlace = place;
-        });
-
-        console.log('place: ', place);
-
-        // Add markers to the map.
-        _markers.push(
-          new mapboxgl.Marker(el)
-            .setLngLat([place.coordinates.y, place.coordinates.x])
-            .addTo(map)
-        );
+        addPlaceMarkerToMap(place);
       }
     }
 
@@ -297,14 +261,13 @@
 
     <label for="location-search" class="mb-8 block">
       <span class="mb-2 block font-bold">Search by location</span>
-
       <form
-        class="flex items-center justify-between gap-2"
+        class="flex flex-wrap items-center justify-between gap-2"
         onsubmit={handleSearchLocation}>
         <div class="flex items-center justify-start gap-2">
           <input
             id="location-search"
-            class="min-w-sm input input-bordered w-72"
+            class="input input-bordered w-72 max-w-[60%]"
             placeholder="Your location..."
             bind:value={searchInput} />
 
@@ -353,15 +316,32 @@
 </div>
 
 <div class="mt-12 w-full {selectedPlace ? 'grid grid-cols-12' : ''}">
-  <div
-    id="map"
-    class="col-span-8 h-[640px] max-h-[60vh] w-full"
-    class:rounded-r={selectedPlace}>
+  <div class="relative col-span-12 h-[640px] max-h-[60vh] w-full md:col-span-8">
+    <div id="map" class="h-full w-full" class:rounded-r={selectedPlace}></div>
+
+    <ul
+      id="map-legend"
+      class="absolute left-4 top-4 z-10 flex flex-col gap-2 rounded border-base-300 bg-base-200 p-3 text-sm">
+      <li>📍 - more than one purpose</li>
+      <li>🥩 - butcher</li>
+      <li>🥛 - raw dairy</li>
+      <li>🍯 - raw honey</li>
+      <li>🍽️ - restaurants</li>
+    </ul>
   </div>
 
   <!-- On mobile, this should be a pop-up -->
   {#if selectedPlace}
-    <div class="col-span-4 px-4" transition:fade>
+    <div
+      id="selected-place"
+      class="col-span-12 mt-12 px-4 pb-[1000px] md:col-span-4 md:mt-0"
+      transition:fade>
+      <a
+        href="#map"
+        class="flex items-center justify-start gap-2 font-semibold md:hidden">
+        <ArrowUp class="h-4 w-4" />Go back to map
+      </a>
+
       <div class="relative rounded border px-4 py-3">
         <button
           class="absolute right-4 top-4"
@@ -376,6 +356,10 @@
 </div>
 
 <style lang="postcss">
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
   :global(.map-marker) {
     @apply block cursor-pointer border-0 p-0 text-2xl;
   }

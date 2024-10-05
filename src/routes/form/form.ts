@@ -103,7 +103,6 @@ form.subscribe(currentForm => {
       return;
     }
 
-    console.log('cached form...')
     localStorage.setItem(CREATE_PLACE_FORM_CACHE_KEY, JSON.stringify(currentForm));
   }, FORM_CACHING_TIMEOUT);
 });

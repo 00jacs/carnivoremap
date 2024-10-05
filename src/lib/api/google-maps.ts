@@ -14,7 +14,7 @@ export async function getGeocoding() {
 export async function getGeocodingAndMarker() {
   let _Geocoder, _AdvancedMarkerElement;
 
-  Promise.all([
+  await Promise.all([
     new Promise<void>(async (resolve) => {
       const { Geocoder } = await loader.importLibrary('geocoding');
       _Geocoder = Geocoder;
@@ -35,7 +35,7 @@ export async function getGeocodingAndMarker() {
 export async function getGoogleMapsLibs() {
   let _Map, _Geocoder, _AdvancedMarkerElement;
 
-  Promise.all([
+  await Promise.all([
     new Promise<void>(async (resolve) => {
       const { Map } = await loader.importLibrary('maps');
       _Map = Map;
