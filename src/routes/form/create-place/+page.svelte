@@ -70,7 +70,7 @@
 
 <form
   id="form-container"
-  class="mx-auto max-w-2xl px-8 py-24"
+  class="mx-auto max-w-4xl px-8 py-24"
   onsubmit={handleSubmit}>
   <span class="mb-2 block text-sm opacity-80">
     get +10 🥩 for your contribution
