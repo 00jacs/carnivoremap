@@ -104,7 +104,12 @@
   </span>
   -->
 
-  <h1 class="mb-6 text-xl font-bold md:text-3xl">Add a new place</h1>
+  <h1 class="mb-2 text-xl font-bold md:text-3xl">Add a new place</h1>
+  <p class="mb-8 opacity-60">
+    This map only exists because of crowdsource contributions - we really
+    appreciate if you could add a listing of your choice to help out other
+    carni/keto-vores in your country! (and support local businesses as well)
+  </p>
 
   <GeneralForm />
   <div class="divider mb-12 mt-10"></div>

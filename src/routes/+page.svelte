@@ -256,10 +256,14 @@
     <h1 class="text-2xl font-bold md:text-3xl">Search our carnivore map</h1>
     <p class="mb-6 mt-2 text-sm opacity-70">
       Find our carnivore/ketovore-friendly places added by our users. The
-      website fully depends on voluntary contributions so feel free to add your
-      review or <a href="/form/create-place" class="link">
+      website fully depends on voluntary contributions so feel free to <a
+        href="/form/create-place"
+        class="link">
         add a place of your choice.
       </a>
+      or
+      <a href="/contact" class="link">contact us</a>
+      in case you have any feedback, questions, or reviews.
     </p>
 
     <label for="location-search" class="mb-8 block">
