@@ -7,14 +7,14 @@
     {
       key: 'streetAddress',
       label: 'Street address',
-      placeholder: 'Washington 156',
+      placeholder: 'Main St.',
       value: '',
       width: 6
     },
     {
       key: 'streetNumber',
       label: 'Street number',
-      placeholder: '148',
+      placeholder: '123',
       width: 3
     },
     {
@@ -26,14 +26,14 @@
     {
       key: 'city',
       label: 'City',
-      placeholder: 'Torun',
+      placeholder: 'New York',
       value: '',
       width: 6
     },
     {
       key: 'postalCode',
       label: 'Postal code',
-      placeholder: '87-100',
+      placeholder: '10-001',
       value: '',
       width: 6
     }
