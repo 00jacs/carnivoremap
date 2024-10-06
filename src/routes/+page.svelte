@@ -325,7 +325,7 @@
 <div id="map-container" class="grid w-full grid-cols-12 md:pt-12">
   <div
     class="relative col-span-12 mt-12 h-[640px] md:mt-0 {selectedPlace
-      ? 'overflow-hidden rounded-r-lg md:!col-span-6 xl:!col-span-4'
+      ? 'overflow-hidden rounded-r-lg md:!col-span-6 xl:!col-span-8'
       : ''}">
     <div id="map" class="h-full w-full"></div>
   </div>

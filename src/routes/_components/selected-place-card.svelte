@@ -89,6 +89,7 @@
     <p class="mt-6 text-sm opacity-60">
       If you'd like to report this place or edit it, please write as un email
       with an explanation <a href="/contact" class="link">here</a>
+      .
     </p>
   </div>
 </div>
