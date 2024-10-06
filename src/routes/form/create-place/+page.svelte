@@ -80,11 +80,17 @@
   }
 </script>
 
+<svelte:head>
+  <title>CarnivoreMap - Add new listing</title>
+</svelte:head>
+
 {#if loading}
+  <!-- @todo -->
   <p>Loading...</p>
 {/if}
 
 {#if error}
+  <!-- @todo -->
   <p>Error... {error}</p>
 {/if}
 

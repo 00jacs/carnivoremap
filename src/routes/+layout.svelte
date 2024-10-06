@@ -5,6 +5,10 @@
   let { children } = $props();
 </script>
 
+<svelte:head>
+  <title>CarnivoreMap</title>
+</svelte:head>
+
 <NavigationBar />
 
 {@render children()}

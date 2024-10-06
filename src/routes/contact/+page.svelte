@@ -2,6 +2,10 @@
   import { PUBLIC_EMAIL_ADDRESS } from '$env/static/public';
 </script>
 
+<svelte:head>
+  <title>CarnivoreMap - Contact</title>
+</svelte:head>
+
 <div class="mx-auto max-w-4xl px-8 py-12">
   <h1 class="mb-4 text-3xl font-bold">Contact us!</h1>
 
