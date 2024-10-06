@@ -139,7 +139,7 @@ export function clearFormCache(): void {
 }
 
 export function clearForm(): void {
-  form.set(emptyForm);
+  form.update(() => emptyForm);
   clearFormCache();
 }
 
