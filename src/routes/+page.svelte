@@ -6,10 +6,7 @@
   import { Search, X, MapPinned, ArrowUp } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
 
-  import {
-    CreatePlaceFlags as PlaceFlags,
-    type PlaceFlag
-  } from './form/form.ts';
+  import { CreatePlaceFlags as PlaceFlags, type PlaceFlag } from './form/form';
 
   let { data } = $props();
   let { places } = data;
@@ -21,6 +18,7 @@
     butcher: '🥩',
     fish: '🐟',
     dairy: '🥛',
+    honey: '🍯',
     restaurant: '🍽️'
   };
 
@@ -54,7 +52,10 @@
     el.addEventListener('click', () => {
       selectedPlace = place;
       setTimeout(() => {
-        document.getElementById('selected-place')?.scrollIntoView();
+        if (window.innerWidth <= 768) {
+          // this is the threshold for md: in tailwindcss
+          document.getElementById('selected-place')?.scrollIntoView();
+        }
       }, 200);
     });
 
@@ -286,7 +287,8 @@
 
     <div>
       <span class="mb-3 block font-bold">I'm looking for...</span>
-      <div class="flex flex-wrap justify-between gap-y-4">
+      <div
+        class="flex flex-wrap justify-start gap-x-4 gap-y-4 md:justify-between md:gap-x-0">
         {#each filters as filter, i}
           <label
             for="filter-{filter.key}"
@@ -300,7 +302,7 @@
               bind:checked={filter.checked} />
           </label>
 
-          <div class="divider divider-horizontal"></div>
+          <div class="divider divider-horizontal hidden md:block"></div>
 
           {#if i === filters.length - 1}
             <button
@@ -321,7 +323,7 @@
 
     <ul
       id="map-legend"
-      class="absolute left-4 top-4 z-10 flex flex-col gap-2 rounded border-base-300 bg-base-200 p-3 text-sm">
+      class="absolute left-4 top-4 z-10 flex flex-col gap-2 rounded border border-primary bg-base-100 p-3 text-sm shadow-xl">
       <li>📍 - more than one purpose</li>
       <li>🥩 - butcher</li>
       <li>🥛 - raw dairy</li>
@@ -348,8 +350,9 @@
           onclick={() => (selectedPlace = null)}>
           <X class="h-4 w-4" />
         </button>
+
         <h2 class="font-bold md:text-2xl">{selectedPlace.title}</h2>
-        <p class="mb-4 mt-1 text-sm">{selectedPlace.description}</p>
+        <p class="mb-4 mt-1 text-sm opacity-60">{selectedPlace.description}</p>
       </div>
     </div>
   {/if}

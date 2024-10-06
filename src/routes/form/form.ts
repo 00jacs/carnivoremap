@@ -115,6 +115,11 @@ export function clearFormCache(): void {
   localStorage.removeItem(CREATE_PLACE_FORM_CACHE_KEY);
 }
 
+export function clearForm(): void {
+  form.set(emptyForm);
+  clearFormCache();
+}
+
 export function toggleFlag(flag: typeof CreatePlaceFlags[number]) {
   form.update(form => ({
     ...form,

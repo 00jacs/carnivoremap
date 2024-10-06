@@ -38,8 +38,8 @@
   ] as const;
 </script>
 
-<section id="general-form" class="flex flex-col gap-4">
-  <div class="flex flex-col gap-6">
+<section id="general-form">
+  <div class="mb-4 flex flex-col gap-6">
     {#each generalFields as { key, label, hint }}
       <label for={key} class="flex w-full flex-col gap-2">
         <span class="block font-semibold">{label}</span>
@@ -56,7 +56,12 @@
     {/each}
   </div>
 
-  <div class="mt-8 flex flex-col gap-2">
+  <label class="mb-1 mt-8 block font-semibold">Choose appropriate flags</label>
+  <span class="mb-4 block text-sm opacity-60">
+    Please choose flags which fit the place that you're adding.
+  </span>
+
+  <div class="flex flex-col gap-2">
     {#each flags as { key, label }}
       <label
         for={key}

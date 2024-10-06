@@ -1,7 +1,7 @@
 <script lang="ts">
   import {
     form,
-    clearFormCache,
+    clearForm,
     CreatePlaceFormSchema,
     type CreatePlaceForm,
     ZodError
@@ -9,6 +9,7 @@
   import { MapPinPlus } from 'lucide-svelte';
   import GeneralForm from '../_components/general-form.svelte';
   import LocationForm from '../_components/location-form.svelte';
+  import { goto } from '$app/navigation';
 
   let error = $state('');
   let loading = $state(false);
@@ -51,6 +52,19 @@
 
       if (!response.ok) {
         throw new Error('Could not send a request. Please contact support.');
+      }
+
+      const insertedPlace = (await response.json())?.[0];
+
+      if (insertedPlace) {
+        clearForm();
+
+        alert('Place has been successfully added!');
+        goto(`/form/review-place/${insertedPlace.id}`);
+      } else {
+        throw new Error(
+          'Could not retrieve a place from the database... Try again later'
+        );
       }
     } catch (e) {
       alert(e);

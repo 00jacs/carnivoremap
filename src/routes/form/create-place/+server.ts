@@ -23,8 +23,11 @@ export async function POST({ request }) {
     return error(400, 'Please confirm the location of the place before submitting it. We need to process its exact coordinates.');
   }
 
+  let place;
+  let _error = false;
+
   try {
-    await db.insert(places).values({
+    place = await db.insert(places).values({
       ...data.general,
       ...data.location,
       coordinates: { x: +data.location.lat, y: +data.location.lng },
@@ -34,13 +37,17 @@ export async function POST({ request }) {
       flagDairy: data.general.flags.includes('dairy'),
       flagHoney: data.general.flags.includes('honey'),
       flagRestaurant: data.general.flags.includes('restaurant'),
-    });
+    }).returning();
+
+    return json(place);
   } catch (e) {
     console.warn('Could not insert into database: ', e);
+    _error = true;
+  }
+
+  if (_error || !place) {
     return error(500, 'Could not insert into database?');
   }
 
-  console.log('success!')
-
-  return json(data);
+  return json(place);
 }
