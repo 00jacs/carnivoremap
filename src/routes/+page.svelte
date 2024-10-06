@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
   import { getGeocoding } from '$lib/api/google-maps';
-  import { Search, X, MapPinned, ArrowUp } from 'lucide-svelte';
+  import { Search, MapPinned } from 'lucide-svelte';
   import { PUBLIC_MAPBOX_KEY } from '$env/static/public';
 
-  import { CreatePlaceFlags as PlaceFlags, type PlaceFlag } from './form/form';
+  import { type PlaceFlag } from './form/form';
+  import SelectedPlaceCard from './_components/selected-place-card.svelte';
 
   let { data } = $props();
   let { places } = data;
-  console.log('places: ', places);
 
   const DEFAULT_MARKER_SIZE = 50;
 
@@ -52,6 +51,10 @@
     el.addEventListener('click', () => {
       selectedPlace = place;
       setTimeout(() => {
+        map?.resize();
+      });
+
+      setTimeout(() => {
         if (window.innerWidth <= 768) {
           // this is the threshold for md: in tailwindcss
           document.getElementById('selected-place')?.scrollIntoView();
@@ -70,7 +73,6 @@
   $effect(() => {
     loading = true;
     (async () => {
-      console.log('places: ', places);
       // @todo: parse places with zod
 
       mapboxgl.accessToken = PUBLIC_MAPBOX_KEY;
@@ -94,7 +96,7 @@
   });
 
   let searchInput = $state<string>('');
-  let selectedPlace = $state<any>(null);
+  let selectedPlace = $state<any | null>(null);
   let geocoder: google.maps.Geocoder;
 
   $effect(() => {
@@ -287,28 +289,27 @@
 
     <div>
       <span class="mb-3 block font-bold">I'm looking for...</span>
-      <div
-        class="flex flex-wrap justify-start gap-x-4 gap-y-4 md:justify-between md:gap-x-0">
+      <div class="flex flex-wrap justify-start gap-x-4 gap-y-4 md:gap-x-0">
         {#each filters as filter, i}
           <label
             for="filter-{filter.key}"
             class="flex items-center justify-start gap-2">
-            <span>{filter.label}</span>
+            <span>{icons[filter.key]} {filter.label}</span>
             <input
               id="filter-{filter.key}"
               type="checkbox"
-              class="checkbox"
+              class="checkbox checkbox-sm"
               onchange={() => (changedFilters = true)}
               bind:checked={filter.checked} />
           </label>
 
-          <div class="divider divider-horizontal hidden md:block"></div>
+          <div class="divider divider-horizontal hidden md:flex"></div>
 
           {#if i === filters.length - 1}
             <button
-              class="btn {changedFilters ? 'btn-error' : 'btn-outline'}"
+              class="btn btn-sm {changedFilters ? 'btn-error' : 'btn-outline'}"
               onclick={filterPlaces}>
-              Apply filters
+              Filter
             </button>
           {/if}
         {/each}
@@ -317,44 +318,23 @@
   </div>
 </div>
 
-<div class="mt-12 w-full {selectedPlace ? 'grid grid-cols-12' : ''}">
-  <div class="relative col-span-12 h-[640px] max-h-[60vh] w-full md:col-span-8">
-    <div id="map" class="h-full w-full" class:rounded-r={selectedPlace}></div>
-
-    <ul
-      id="map-legend"
-      class="absolute left-4 top-4 z-10 flex flex-col gap-2 rounded border border-primary bg-base-100 p-3 text-sm shadow-xl">
-      <li>📍 - more than one purpose</li>
-      <li>🥩 - butcher</li>
-      <li>🥛 - raw dairy</li>
-      <li>🍯 - raw honey</li>
-      <li>🍽️ - restaurants</li>
-    </ul>
+<div id="map-container" class="grid w-full grid-cols-12 md:pt-12">
+  <div
+    class="relative col-span-12 mt-12 h-[640px] md:mt-0 {selectedPlace
+      ? 'overflow-hidden rounded-r-lg md:!col-span-6 xl:!col-span-4'
+      : ''}">
+    <div id="map" class="h-full w-full"></div>
   </div>
 
-  <!-- On mobile, this should be a pop-up -->
   {#if selectedPlace}
-    <div
-      id="selected-place"
-      class="col-span-12 mt-12 px-4 pb-[1000px] md:col-span-4 md:mt-0"
-      transition:fade>
-      <a
-        href="#map"
-        class="flex items-center justify-start gap-2 font-semibold md:hidden">
-        <ArrowUp class="h-4 w-4" />Go back to map
-      </a>
-
-      <div class="relative rounded border px-4 py-3">
-        <button
-          class="absolute right-4 top-4"
-          onclick={() => (selectedPlace = null)}>
-          <X class="h-4 w-4" />
-        </button>
-
-        <h2 class="font-bold md:text-2xl">{selectedPlace.title}</h2>
-        <p class="mb-4 mt-1 text-sm opacity-60">{selectedPlace.description}</p>
-      </div>
-    </div>
+    <SelectedPlaceCard
+      place={selectedPlace}
+      close={() => {
+        selectedPlace = null;
+        setTimeout(() => {
+          map?.resize();
+        });
+      }} />
   {/if}
 </div>
 

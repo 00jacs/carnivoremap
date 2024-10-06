@@ -13,6 +13,10 @@ export const CreatePlaceFormCacheSchema = z.object({
   general: z.object({
     title: z.string().default(''),
     description: z.string().default(''),
+    websiteUrl: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    socialMediaUrl: z.string().optional(),
     flags: z.array(z.enum(CreatePlaceFlags)).default([])
   }),
   location: z.object({
@@ -23,6 +27,11 @@ export const CreatePlaceFormCacheSchema = z.object({
     country: z.string().default(''),
     lat: z.null(), // we do not want to cache lat, user needs to re-confirm location
     lng: z.null()  // we do not want to cache lng, user needs to re-confirm location
+  }),
+  author: z.object({
+    name: z.string().max(60, 'The name must be under 60 characters'),
+    email: z.string(),
+    message: z.string().max(400, 'The message needs to be under 400 characters.')
   })
 });
 
@@ -30,6 +39,10 @@ export const CreatePlaceFormSchema = z.object({
   general: z.object({
     title: z.string().min(4, 'The title needs to have at least 4 characters').max(80, 'The title can have at most 80 characters'),
     description: z.string().min(10, 'The description needs to have at least 10 characters').max(240, 'The description can have at most 240 characters'),
+    websiteUrl: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    socialMediaUrl: z.string().optional(),
     flags: z.array(z.enum(CreatePlaceFlags))
   }),
   location: z.object({
@@ -40,6 +53,11 @@ export const CreatePlaceFormSchema = z.object({
     country: v.string('country', 2, 32),
     lat: z.union([z.null(), z.coerce.number()]),
     lng: z.union([z.null(), z.coerce.number()])
+  }),
+  author: z.object({
+    name: z.string().optional().default(''),
+    email: z.string().optional().default(''),
+    message: z.string().optional().default('')
   })
 });
 
@@ -84,6 +102,11 @@ const emptyForm: CreatePlaceForm = {
     country: '',
     lat: null,
     lng: null
+  },
+  author: {
+    name: '',
+    email: '',
+    message: ''
   }
 }
 

@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, text, geometry, index, boolean } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, text, geometry, index, boolean, varchar } from "drizzle-orm/pg-core";
 
 export const profiles = pgTable('profile', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -17,6 +17,10 @@ export const places = pgTable('place', {
   // general
   title: text('title'),
   description: text('description'),
+  websiteUrl: text('text'),
+  email: text('email'),
+  phone: text('phone'),
+  socialMediaUrl: text('social_media_url'),
 
   // flags
   flagButcher: boolean('flag_butcher'),
@@ -31,6 +35,11 @@ export const places = pgTable('place', {
   postalCode: text('postal_code'),
   city: text('city'),
   country: text('country'),
+
+  //author-related
+  authorName: text('author_name'),
+  authorEmail: text('author_email'),
+  authorMessage: varchar('author_message', { length: 256 }),
 
   // location for PostGIS for fast indexing
   coordinates: geometry('coordinates', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),

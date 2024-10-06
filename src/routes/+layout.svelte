@@ -6,4 +6,5 @@
 </script>
 
 <NavigationBar />
+
 {@render children()}

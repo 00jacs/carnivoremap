@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import {
     form,
     clearForm,
@@ -9,7 +10,7 @@
   import { MapPinPlus } from 'lucide-svelte';
   import GeneralForm from '../_components/general-form.svelte';
   import LocationForm from '../_components/location-form.svelte';
-  import { goto } from '$app/navigation';
+  import AuthorForm from '../_components/author-form.svelte';
 
   let error = $state('');
   let loading = $state(false);
@@ -18,6 +19,11 @@
     e?.preventDefault();
 
     loading = true;
+
+    if (!$form.location.lat || !$form.location.lng) {
+      alert('Please confirm the location before you submit the form');
+      return;
+    }
 
     let parsed: CreatePlaceForm | null = null;
 
@@ -60,7 +66,7 @@
         clearForm();
 
         alert('Place has been successfully added!');
-        goto(`/form/review-place/${insertedPlace.id}`);
+        goto('/form/create-place/thanks');
       } else {
         throw new Error(
           'Could not retrieve a place from the database... Try again later'
@@ -84,20 +90,23 @@
 
 <form
   id="form-container"
-  class="mx-auto max-w-4xl px-8 py-24"
+  class="mx-auto max-w-4xl px-8 py-12"
   onsubmit={handleSubmit}>
+  <!--
   <span class="mb-2 block text-sm opacity-80">
     get +10 🥩 for your contribution
   </span>
+  -->
 
-  <h1 class="mb-6 text-xl font-bold xl:text-3xl">Add a new place</h1>
+  <h1 class="mb-6 text-xl font-bold md:text-3xl">Add a new place</h1>
 
   <GeneralForm />
   <div class="divider mb-12 mt-10"></div>
   <LocationForm />
-  <div class="divider mb-12 mt-10"></div>
+  <div class="divider mb-8 mt-10"></div>
+  <AuthorForm />
 
-  <button type="submit" class="btn btn-primary w-full">
+  <button type="submit" class="btn btn-primary mt-10 w-full">
     <MapPinPlus class="h-4 w-4" />
     Add place
   </button>

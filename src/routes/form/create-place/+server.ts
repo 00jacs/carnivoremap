@@ -26,10 +26,17 @@ export async function POST({ request }) {
   let place;
   let _error = false;
 
+  console.log('data author: ', data.author);
+
   try {
     place = await db.insert(places).values({
       ...data.general,
       ...data.location,
+
+      authorName: data.author.name,
+      authorEmail: data.author.email,
+      authorMessage: data.author.message,
+
       coordinates: { x: +data.location.lat, y: +data.location.lng },
 
       flagButcher: data.general.flags.includes('butcher'),
