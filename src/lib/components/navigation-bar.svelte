@@ -64,13 +64,13 @@
     <div class="divider divider-horizontal hidden md:flex"></div>
   {/each}
 
-  <label class="swap swap-rotate" for="theme-change-checkbox">
+  <label class="swap swap-rotate">
     <!-- this hidden checkbox controls the state -->
     <input
-      id="theme-change-checkbox"
       type="checkbox"
       class="theme-controller"
       value="synthwave"
+      aria-label="Theme change"
       onchange={changeActive} />
 
     <Sun class="swap-on h-5 w-5" />

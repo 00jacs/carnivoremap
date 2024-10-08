@@ -283,11 +283,12 @@
             id="location-search"
             class="input input-bordered w-72 max-w-[60%]"
             placeholder="Your location..."
+            aria-label="Search by your address"
             bind:value={searchInput} />
 
           <button
             type="submit"
-            name="Search location button"
+            aria-label="Search location button"
             class="btn btn-outline">
             <Search />
           </button>
