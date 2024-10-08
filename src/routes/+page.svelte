@@ -247,8 +247,15 @@
   let changedFilters = $state(false);
 </script>
 
+<svelte:head>
+  <title>CarnivoreMap - Discover Carnivore Spots Worldwide</title>
+  <meta
+    name="description"
+    content="Explore carnivore spots like grass-fed butchers, raw dairy, keto-friendly restaurants from all around the world" />
+</svelte:head>
+
 {#if loading}
-  Loading...
+  <p class="text-center">Loading places...</p>
 {/if}
 
 <div class="mx-auto max-w-4xl px-8 pt-12">
