@@ -278,7 +278,12 @@
             placeholder="Your location..."
             bind:value={searchInput} />
 
-          <button type="submit" class="btn btn-outline"><Search /></button>
+          <button
+            type="submit"
+            name="Search location button"
+            class="btn btn-outline">
+            <Search />
+          </button>
         </div>
 
         <button
