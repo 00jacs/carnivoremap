@@ -31,13 +31,15 @@
       parsed = CreatePlaceFormSchema.parse($form);
     } catch (e) {
       if (e instanceof ZodError) {
-        for (const err in e.flatten()?.fieldErrors) {
-          if (err?.length) {
-            loading = false;
-            error = err[0];
-            alert(error);
-            return;
-          }
+        const flat = e.flatten()?.fieldErrors;
+        let k: keyof typeof flat;
+
+        for (k in flat) {
+          error =
+            flat[k]?.[0] || 'Error: Please try again later or contact support';
+          alert(error);
+          loading = false;
+          return;
         }
       }
 

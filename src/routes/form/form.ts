@@ -37,8 +37,8 @@ export const CreatePlaceFormCacheSchema = z.object({
 
 export const CreatePlaceFormSchema = z.object({
   general: z.object({
-    title: z.string().min(4, 'The title needs to have at least 4 characters').max(80, 'The title can have at most 80 characters'),
-    description: z.string().min(10, 'The description needs to have at least 10 characters').max(240, 'The description can have at most 240 characters'),
+    title: z.string().min(4, 'The title needs to have at least 4 characters').max(240, 'The title can have at most 240 characters'),
+    description: z.string().min(10, 'The description needs to have at least 10 characters').max(500, 'The description can have at most 500 characters'),
     websiteUrl: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
